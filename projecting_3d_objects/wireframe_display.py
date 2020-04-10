@@ -27,9 +27,14 @@ class ProjectionViewer:
                 if event.type == pygame.QUIT:
                     running = False
 
+                elif event.type == pygame.KEYDOWN:
+                    if event.key in key_to_function:
+                        key_to_function[event.key](self)
+
             self.display()
             pygame.display.flip()
-    
+   
+
     def addWireFrame(self, name, wireframe):
         """Add a named wireframe object."""
         self.wireframes[name] = wireframe
@@ -48,10 +53,38 @@ class ProjectionViewer:
                 for node in wireframe.nodes:
                     pygame.draw.circle(self.screen, self.node_color, (int(node.x), int(node.y)), self.node_radius, 0)
 
+    def translateAll(self, axis, d):
+        """ Translate all wireframes along a given axis by d units. """
+
+        for wireframe in self.wireframes.values():
+            wireframe.translate(axis, d)
+
+    def scaleAll(self, scale):
+        """ Scale all wireframes by a given scale, centered on the center of the screen. """
+
+        center_x = self.width/2
+        center_y = self.height / 2
+
+        for wireframe in self.wireframes.values():
+            wireframe.scale((center_x, center_y), scale)
+
+key_to_function = {
+        pygame.K_LEFT: (lambda x: x.translateAll('x', -10)),
+        pygame.K_RIGHT: (lambda x: x.translateAll('x', 10)),
+        pygame.K_DOWN: (lambda x: x.translateAll('y', 10)),
+        pygame.K_UP: (lambda x: x.translateAll('y', -10)),
+        pygame.K_EQUALS: (lambda x: x.scaleAll(1.25)),
+        pygame.K_MINUS: (lambda x: x.scaleAll(0.8))
+        }
 if __name__ == '__main__':
     cube = wireframe.Wireframe()
     cube.add_nodes([(x,y,z) for x in (50, 250) for y in (50, 250) for z in (50, 250)])
     cube.add_edges([(n, n+4) for n in range(0, 4)] + [(n, n+1) for n in range(0, 8, 2)] + [(n, n+2) for n in (0, 1, 4, 5)])
+
+    # cube.translate('x', 100)
+    # cube.translate('y', -40)
+
+    # cube.scale((200, 150), .75)
 
     pv = ProjectionViewer(400, 300)
     pv.addWireFrame('cube', cube)

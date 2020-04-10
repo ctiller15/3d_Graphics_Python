@@ -51,6 +51,22 @@ class Wireframe:
         for i, edge in enumerate(self.edges):
             print(f" {i}: ({edge.start.x}, {edge.start.y}, {edge.start.z})")
             print(f"to ({edge.stop.x}, {edge.stop.y}, {edge.stop.z})")
+    
+    def translate(self, axis, d):
+        """ Translate each node of a wireframee by d along a given axis. """
+
+        if axis in ['x', 'y', 'z']:
+            for node in self.nodes:
+                setattr(node, axis, getattr(node, axis) + d)
+    
+    def scale(self,  centers, scale):
+        """ Scale the wireframe from the center of the screen. """
+
+        for node in self.nodes:
+            node.x = centers[0] + scale * (node.x - centers[0])
+            node.y = centers[1] + scale * (node.y - centers[1])
+            node.z *= scale
+
 
 if __name__ == "__main__":
     """With the current setup, we can add three nodes and
