@@ -1,3 +1,5 @@
+import math
+
 class Node:
     """
     Nodes refer to single points in 3d space with three coordinates.
@@ -66,6 +68,48 @@ class Wireframe:
             node.x = centers[0] + scale * (node.x - centers[0])
             node.y = centers[1] + scale * (node.y - centers[1])
             node.z *= scale
+
+    def find_center(self):
+        """
+        Find the center of the wireframe.
+        """
+        
+        num_nodes = len(self.nodes)
+        mean_x = sum([node.x for node in self.nodes]) / num_nodes
+        mean_y = sum([node.y for node in self.nodes]) / num_nodes
+        mean_z = sum([node.z for node in self.nodes]) / num_nodes
+
+        return (mean_x, mean_y, mean_z)
+
+    def rotate_z(self, centers, radians):
+        for node in self.nodes:
+            cx, cy, cz = centers
+            x = node.x - cx
+            y = node.y - cy
+            d = math.hypot(y, x)
+            theta = math.atan2(y, x) + radians
+            node.x = cx + d * math.cos(theta)
+            node.y = cy + d * math.sin(theta)
+
+    def rotate_x(self, centers, radians):
+        for node in self.nodes:
+            cx, cy, cz = centers
+            y = node.y - cy
+            z = node.z - cz
+            d = math.hypot(y, z)
+            theta = math.atan2(y, z) + radians
+            node.z = cz + d * math.cos(theta)
+            node.y = cy + d * math.sin(theta)
+
+    def rotate_y(self, centers, radians):
+        for node in self.nodes:
+            cx, cy, cz = centers
+            x = node.x - cx
+            z = node.z - cz
+            d = math.hypot(x, z)
+            theta = math.atan2(x, z) + radians
+            node.z = cz + d * math.cos(theta)
+            node.x = cx + d * math.sin(theta)
 
 
 if __name__ == "__main__":
