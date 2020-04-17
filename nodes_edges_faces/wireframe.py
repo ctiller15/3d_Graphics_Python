@@ -1,22 +1,5 @@
+import numpy as np
 import math
-
-class Node:
-    """
-    Nodes refer to single points in 3d space with three coordinates.
-    These coordinates are x, y, and z.
-    """
-    def __init__(self, coordinates):
-        self.x = coordinates[0]
-        self.y = coordinates[1]
-        self.z = coordinates[2]
-
-class Edge:
-    """
-    Edges, also called vertices, are lines that connect two nodes.
-    """
-    def __init__(self, start, stop):
-        self.start = start
-        self.stop = stop
 
 class Wireframe:
     """
@@ -24,35 +7,34 @@ class Wireframe:
     Wireframes do not possess any faces.
     """
     def __init__(self):
-        self.nodes = []
+        self.nodes = np.zeros((0, 4))
         self.edges = []
 
     """
     Adds a list of nodes to the existing set of nodes.
     """
-    def add_nodes(self, node_list):
-        for node in node_list:
-            self.nodes.append(Node(node))
+    def add_nodes(self, node_array):
+        ones_column = np.ones((len(node_array), 1))
+        ones_added = np.hstack((node_array, ones_column))
+        self.nodes = np.vstack((self.nodes, ones_added))
 
     """
     Adds a list of edges to the existing set of edges.
     """
     def add_edges(self, edge_list):
-        for (start, stop) in edge_list:
-            self.edges.append(Edge(self.nodes[start], self.nodes[stop]))
+        self.edges += edge_list
 
     """Outputs all of the values for every existing node."""
     def output_nodes(self):
         print("\n --- Nodes --- ")
-        for i, node in enumerate(self.nodes):
-            print(f"{i}: ({node.x:.2f}, {node.y:.2f}, {node.z:.2f})")
+        for i, (x, y, z, _) in enumerate(self.nodes):
+            print(f"{i}: ({x}, {y}, {z})")
 
     """Outputs all of the edges for every existing edge set."""
     def output_edges(self):
         print("\n --- Edges --- ")
-        for i, edge in enumerate(self.edges):
-            print(f" {i}: ({edge.start.x}, {edge.start.y}, {edge.start.z})")
-            print(f"to ({edge.stop.x}, {edge.stop.y}, {edge.stop.z})")
+        for i, (node1, node2) in enumerate(self.edges):
+            print(f"   {i}: {node1} -> {node2}")
     
     def translate(self, axis, d):
         """ Translate each node of a wireframee by d along a given axis. """
@@ -88,8 +70,8 @@ class Wireframe:
             y = node.y - cy
             d = math.hypot(y, x)
             theta = math.atan2(y, x) + radians
-            node.x = cx + d * math.cos(theta)
-            node.y = cy + d * math.sin(theta)
+            node.x = cx + d * np.cos(theta)
+            node.y = cy + d * np.sin(theta)
 
     def rotate_x(self, centers, radians):
         for node in self.nodes:
@@ -98,8 +80,8 @@ class Wireframe:
             z = node.z - cz
             d = math.hypot(y, z)
             theta = math.atan2(y, z) + radians
-            node.z = cz + d * math.cos(theta)
-            node.y = cy + d * math.sin(theta)
+            node.z = cz + d * np.cos(theta)
+            node.y = cy + d * np.sin(theta)
 
     def rotate_y(self, centers, radians):
         for node in self.nodes:
@@ -108,16 +90,18 @@ class Wireframe:
             z = node.z - cz
             d = math.hypot(x, z)
             theta = math.atan2(x, z) + radians
-            node.z = cz + d * math.cos(theta)
-            node.x = cx + d * math.sin(theta)
+            node.z = cz + d * np.cos(theta)
+            node.x = cx + d * np.sin(theta)
 
 
 if __name__ == "__main__":
     """With the current setup, we can add three nodes and
     create an edge between the second two like so:"""
-    my_wireframe = Wireframe()
-    my_wireframe.add_nodes([(0, 0, 0), (1, 2, 3), (3, 2, 1)])
-    my_wireframe.add_edges([(1, 2)])
-
-    my_wireframe.output_nodes()
-    my_wireframe.output_edges()
+    cube = Wireframe()
+    cube_nodes = [(x, y, z) for x in (0, 1) for y in (0, 1) for z in (0, 1)]
+    cube.add_nodes(np.array(cube_nodes))
+    cube.add_edges([(n, n+4) for n in range(0, 4)])
+    cube.add_edges([(n, n+1) for n in range(0, 8, 2)])
+    cube.add_edges([(n, n+2) for n in (0, 1, 4, 5)])
+    cube.output_nodes()
+    cube.output_edges()
